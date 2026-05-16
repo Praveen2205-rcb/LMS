@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Issue Book{% endblock %}
+{% block header_title %}Issue Book{% endblock %}
+{% block header_sub %}Lend a book to a member{% endblock %}
+{% block content %}
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📤 Issue Book to Member</span>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Select Book *</label>
+          <select name="book_id" required style="margin-top:6px">
+            <option value="">— Choose a book —</option>
+            {% for b in books %}
+            <option value="{{ b.id }}" {% if b.available_copies < 1 %}disabled{% endif %}>
+              {{ b.title }} by {{ b.author }}
+              {% if b.available_copies > 0 %} ({{ b.available_copies }} available){% else %} [OUT OF STOCK]{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Select Member *</label>
+          <select name="user_id" required style="margin-top:6px">
+            <option value="">— Choose a member —</option>
+            {% for m in members %}
+            <option value="{{ m.id }}">{{ m.full_name }} ({{ m.member_id }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:20px">
+          <label>Loan Duration (days)</label>
+          <select name="loan_days" style="margin-top:6px">
+            <option value="7">7 days</option>
+            <option value="14" selected>14 days (default)</option>
+            <option value="21">21 days</option>
+            <option value="30">30 days</option>
+          </select>
+        </div>
+        <div style="padding:12px;background:var(--accent-dim);border-radius:var(--radius-sm);margin-bottom:16px;font-size:0.82rem;color:var(--accent)">
+          💡 Fine rate: ₹2.00 per day after due date
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px">
+          📤 Issue Book
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">ℹ How It Works</span></div>
+    <div class="card-body">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        {% set steps = [
+          ("1", "Select Book", "Choose from available books. Unavailable books are grayed out."),
+          ("2", "Select Member", "Pick the registered member who is borrowing."),
+          ("3", "Set Duration", "Default is 14 days. Adjust as needed."),
+          ("4", "Confirm", "Click Issue Book. Record is created instantly."),
+        ] %}
+        {% for num, title, desc in steps %}
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:28px;height:28px;background:var(--accent);color:var(--bg-primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0">{{ num }}</div>
+          <div>
+            <div style="font-weight:600;font-size:0.88rem;margin-bottom:2px">{{ title }}</div>
+            <div style="font-size:0.8rem;color:var(--text-secondary)">{{ desc }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

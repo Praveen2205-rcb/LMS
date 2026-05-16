@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Members{% endblock %}
+{% block header_title %}Members{% endblock %}
+{% block header_sub %}View registered library members{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <form method="GET" class="search-bar" style="flex:1">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" name="search" value="{{ search }}" placeholder="Search members…" class="live-search"/>
+      </div>
+      <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+    </form>
+    <span class="badge badge-teal">{{ members|length }}</span>
+  </div>
+  <div class="table-wrapper">
+    {% if members %}
+    <table>
+      <thead><tr><th>Member ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Active Borrows</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for m in members %}
+        <tr>
+          <td><span class="badge badge-blue font-mono">{{ m.member_id }}</span></td>
+          <td><a href="{{ url_for('librarian.member_detail', user_id=m.id) }}" style="color:var(--text-primary);text-decoration:none;font-weight:600">{{ m.full_name }}</a></td>
+          <td class="text-sm">{{ m.email or "—" }}</td>
+          <td class="text-sm">{{ m.phone or "—" }}</td>
+          <td>{% if m.active_borrows > 0 %}<span class="badge badge-amber">{{ m.active_borrows }}</span>{% else %}<span class="text-muted">0</span>{% endif %}</td>
+          <td>{% if m.is_active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-rose">Inactive</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><div class="empty-icon">👥</div><p>No members found</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

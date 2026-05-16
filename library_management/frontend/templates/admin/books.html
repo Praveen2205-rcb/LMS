@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Books{% endblock %}
+{% block header_title %}Book Management{% endblock %}
+{% block header_sub %}Manage library book inventory{% endblock %}
+{% block header_actions %}
+  <a href="{{ url_for('admin.add_book_view') }}" class="btn btn-primary btn-sm">➕ Add Book</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <form method="GET" class="search-bar" style="flex:1">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" name="search" value="{{ search }}" placeholder="Search by title, author, ISBN…" class="live-search"/>
+      </div>
+      <select name="category_id" onchange="this.form.submit()" style="width:160px">
+        <option value="">All Categories</option>
+        {% for c in categories %}
+        <option value="{{ c.id }}" {% if request.args.get('category_id')|string == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+    </form>
+    <span class="badge badge-amber">{{ books|length }} books</span>
+  </div>
+  <div class="table-wrapper">
+    {% if books %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Title</th><th>Author</th><th>Category</th>
+          <th>ISBN</th><th>Year</th><th>Copies</th><th>Available</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in books %}
+        <tr>
+          <td class="font-mono text-muted">{{ b.id }}</td>
+          <td><strong>{{ b.title }}</strong>
+            {% if b.location %}<br><span class="text-muted text-sm">📍 {{ b.location }}</span>{% endif %}
+          </td>
+          <td>{{ b.author }}</td>
+          <td>{% if b.category_name %}<span class="badge badge-blue">{{ b.category_name }}</span>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+          <td class="font-mono text-sm">{{ b.isbn or "—" }}</td>
+          <td>{{ b.year_published or "—" }}</td>
+          <td>{{ b.total_copies }}</td>
+          <td>
+            {% if b.available_copies > 0 %}
+              <span class="badge badge-green">{{ b.available_copies }} avail</span>
+            {% else %}
+              <span class="badge badge-rose">Out</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="flex gap-2">
+              <a href="{{ url_for('admin.edit_book_view', book_id=b.id) }}" class="btn btn-secondary btn-sm">✏ Edit</a>
+              <form method="POST" action="{{ url_for('admin.delete_book_view', book_id=b.id) }}" style="display:inline" onsubmit="return LMS.confirmDelete('Delete \\"{{ b.title }}\\"?')">
+                <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📚</div>
+      <p>No books found{% if search %} for "{{ search }}"{% endif %}</p>
+      <a href="{{ url_for('admin.add_book_view') }}" class="btn btn-primary" style="margin-top:12px">Add First Book</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

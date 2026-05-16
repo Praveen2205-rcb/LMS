@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block header_title %}Reports & Analytics{% endblock %}
+{% block header_sub %}Generate and download library reports{% endblock %}
+{% block content %}
+<div class="grid-2" style="margin-bottom:20px">
+  <div class="card">
+    <div class="card-header"><span class="card-title">📊 Quick Stats Summary</span></div>
+    <div class="card-body">
+      <table>
+        <tbody>
+          <tr><td style="color:var(--text-secondary)">Total Books</td><td><strong>{{ stats.total_books }}</strong></td></tr>
+          <tr><td style="color:var(--text-secondary)">Available Books</td><td><strong>{{ stats.available_books|int }}</strong></td></tr>
+          <tr><td style="color:var(--text-secondary)">Total Members</td><td><strong>{{ stats.total_members }}</strong></td></tr>
+          <tr><td style="color:var(--text-secondary)">Currently Issued</td><td><strong>{{ stats.active_issues }}</strong></td></tr>
+          <tr><td style="color:var(--text-secondary)">Overdue Books</td><td><strong style="color:var(--rose)">{{ stats.overdue_count }}</strong></td></tr>
+          <tr><td style="color:var(--text-secondary)">Pending Fines</td><td><strong style="color:var(--accent)">₹{{ "%.2f"|format(stats.total_fines) }}</strong></td></tr>
+          <tr><td style="color:var(--text-secondary)">Issued Today</td><td><strong>{{ stats.today_issues }}</strong></td></tr>
+          <tr><td style="color:var(--text-secondary)">Returned Today</td><td><strong>{{ stats.today_returns }}</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">📁 Generate Reports</span></div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+      <div style="padding:16px;background:var(--bg-secondary);border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <div style="font-size:0.95rem;font-weight:600;margin-bottom:4px">📑 Full Library Report</div>
+        <div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:12px">
+          Complete PDF with books, members, transactions and statistics.
+        </div>
+        <a href="{{ url_for('admin.generate_report') }}" class="btn btn-primary" style="width:100%;justify-content:center">
+          ⬇ Download PDF Report
+        </a>
+      </div>
+
+      <div style="padding:16px;background:var(--bg-secondary);border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <div style="font-size:0.95rem;font-weight:600;margin-bottom:4px">🗄 Database Backup</div>
+        <div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:12px">
+          Scheduled daily at 02:00 AM. Backups stored in <code style="font-family:monospace;color:var(--accent)">database/backups/</code>
+        </div>
+        <div class="badge badge-green">Auto-backup enabled</div>
+      </div>
+
+      <div style="padding:14px;background:var(--accent-dim);border-radius:var(--radius-sm);border:1px solid rgba(245,158,11,0.2)">
+        <div style="font-size:0.8rem;color:var(--accent)">
+          💡 Reports are auto-generated in PDF format using fpdf2 and stored in <code>database/reports/</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Category breakdown -->
+<div class="card">
+  <div class="card-header"><span class="card-title">📂 Books by Category</span></div>
+  <div class="card-body">
+    {% if stats.category_dist %}
+    <div style="display:flex;flex-direction:column;gap:8px">
+      {% set max_cnt = stats.category_dist[0].cnt if stats.category_dist else 1 %}
+      {% for c in stats.category_dist %}
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="width:130px;font-size:0.82rem;color:var(--text-secondary);flex-shrink:0">{{ c.name }}</span>
+        <div style="flex:1;background:var(--bg-secondary);border-radius:4px;height:8px;overflow:hidden">
+          <div style="height:100%;background:var(--accent);border-radius:4px;width:{{ [((c.cnt / (max_cnt if max_cnt > 0 else 1)) * 100)|round|int, 2]|max }}%;transition:width 0.5s"></div>
+        </div>
+        <span class="badge badge-amber" style="flex-shrink:0">{{ c.cnt }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><p>No category data</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

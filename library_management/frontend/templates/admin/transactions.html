@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Transactions{% endblock %}
+{% block header_title %}Transactions{% endblock %}
+{% block header_sub %}All book issue and return records{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <form method="GET" class="flex gap-2 items-center" style="flex:1">
+      <span class="card-title">All Transactions</span>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <select name="status" onchange="this.form.submit()" style="width:160px">
+          <option value="" {% if not status_filter %}selected{% endif %}>All Status</option>
+          <option value="issued" {% if status_filter=='issued' %}selected{% endif %}>Issued</option>
+          <option value="returned" {% if status_filter=='returned' %}selected{% endif %}>Returned</option>
+          <option value="overdue" {% if status_filter=='overdue' %}selected{% endif %}>Overdue</option>
+        </select>
+        <span class="badge badge-amber">{{ transactions|length }}</span>
+      </div>
+    </form>
+  </div>
+  <div class="table-wrapper">
+    {% if transactions %}
+    <table>
+      <thead>
+        <tr><th>#</th><th>Book</th><th>Member</th><th>Issued</th><th>Due Date</th><th>Returned</th><th>Fine</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for t in transactions %}
+        <tr>
+          <td class="font-mono text-muted text-sm">{{ t.id }}</td>
+          <td>
+            <strong>{{ t.book_title }}</strong>
+            <br><span class="text-muted text-sm">{{ t.book_author }}</span>
+          </td>
+          <td>
+            <strong>{{ t.member_name }}</strong>
+            <br><span class="badge badge-blue font-mono" style="font-size:0.65rem">{{ t.member_code }}</span>
+          </td>
+          <td class="text-sm">{{ t.issue_date }}</td>
+          <td class="text-sm {% if t.status == 'overdue' %}text-rose{% endif %}">{{ t.due_date }}</td>
+          <td class="text-sm">{{ t.return_date or '—' }}</td>
+          <td>
+            {% if t.fine_amount and t.fine_amount > 0 %}
+              <span class="badge {% if t.fine_paid %}badge-green{% else %}badge-rose{% endif %}">
+                ₹{{ "%.2f"|format(t.fine_amount) }}
+              </span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if t.status == 'issued' %}<span class="badge badge-amber">Issued</span>
+            {% elif t.status == 'returned' %}<span class="badge badge-green">Returned</span>
+            {% elif t.status == 'overdue' %}<span class="badge badge-rose">⚠ Overdue</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><div class="empty-icon">↔</div><p>No transactions found</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

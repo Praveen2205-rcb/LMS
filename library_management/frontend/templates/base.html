@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Library MS{% endblock %} — LibraryOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <h1>LibraryOS</h1>
+      <p>Management System</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      {% set role = session.get('role', '') %}
+
+      {% if role == 'admin' %}
+        <div class="nav-section-label">Admin</div>
+        <a href="{{ url_for('admin.dashboard') }}" class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+          <span class="nav-icon">⊞</span> Dashboard
+        </a>
+        <a href="{{ url_for('admin.books') }}" class="nav-link {% if 'book' in request.endpoint %}active{% endif %}">
+          <span class="nav-icon">📖</span> Books
+        </a>
+        <a href="{{ url_for('admin.members') }}" class="nav-link {% if 'member' in request.endpoint and 'admin' in request.endpoint %}active{% endif %}">
+          <span class="nav-icon">👤</span> Members
+        </a>
+        <a href="{{ url_for('admin.transactions') }}" class="nav-link {% if request.endpoint == 'admin.transactions' %}active{% endif %}">
+          <span class="nav-icon">↔</span> Transactions
+        </a>
+        <a href="{{ url_for('admin.reports') }}" class="nav-link {% if request.endpoint == 'admin.reports' %}active{% endif %}">
+          <span class="nav-icon">📊</span> Reports
+        </a>
+        <div class="nav-section-label" style="margin-top:12px">Librarian</div>
+        <a href="{{ url_for('librarian.issue') }}" class="nav-link {% if request.endpoint == 'librarian.issue' %}active{% endif %}">
+          <span class="nav-icon">➕</span> Issue Book
+        </a>
+        <a href="{{ url_for('librarian.return_book_view') }}" class="nav-link {% if request.endpoint == 'librarian.return_book_view' %}active{% endif %}">
+          <span class="nav-icon">↩</span> Return Book
+        </a>
+
+      {% elif role == 'librarian' %}
+        <div class="nav-section-label">Librarian</div>
+        <a href="{{ url_for('librarian.dashboard') }}" class="nav-link {% if request.endpoint == 'librarian.dashboard' %}active{% endif %}">
+          <span class="nav-icon">⊞</span> Dashboard
+        </a>
+        <a href="{{ url_for('librarian.issue') }}" class="nav-link {% if request.endpoint == 'librarian.issue' %}active{% endif %}">
+          <span class="nav-icon">➕</span> Issue Book
+        </a>
+        <a href="{{ url_for('librarian.return_book_view') }}" class="nav-link {% if request.endpoint == 'librarian.return_book_view' %}active{% endif %}">
+          <span class="nav-icon">↩</span> Return Book
+        </a>
+        <a href="{{ url_for('librarian.members') }}" class="nav-link {% if request.endpoint == 'librarian.members' %}active{% endif %}">
+          <span class="nav-icon">👥</span> Members
+        </a>
+
+      {% elif role == 'member' %}
+        <div class="nav-section-label">Member</div>
+        <a href="{{ url_for('member.dashboard') }}" class="nav-link {% if request.endpoint == 'member.dashboard' %}active{% endif %}">
+          <span class="nav-icon">⊞</span> Dashboard
+        </a>
+        <a href="{{ url_for('member.search') }}" class="nav-link {% if request.endpoint == 'member.search' %}active{% endif %}">
+          <span class="nav-icon">🔍</span> Search Books
+        </a>
+        <a href="{{ url_for('member.my_books') }}" class="nav-link {% if request.endpoint == 'member.my_books' %}active{% endif %}">
+          <span class="nav-icon">📚</span> My Books
+        </a>
+      {% endif %}
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar">{{ (session.get('full_name','?')[0])|upper }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ session.get('full_name','User') }}</div>
+          <div class="user-role">{{ session.get('role','') }}</div>
+        </div>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="nav-link" style="margin-top:8px;color:var(--rose)">
+        <span class="nav-icon">⏻</span> Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <header class="top-header">
+      <button id="sidebar-toggle" class="btn btn-secondary btn-icon" style="display:none">☰</button>
+      <div>
+        <div class="header-title">{% block header_title %}Dashboard{% endblock %}</div>
+        <div class="header-breadcrumb">{% block header_sub %}{% endblock %}</div>
+      </div>
+      <div class="header-actions">
+        <span class="badge badge-{% if session.get('role')=='admin' %}amber{% elif session.get('role')=='librarian' %}teal{% else %}blue{% endif %}">
+          {{ session.get('role','') | title }}
+        </span>
+        {% block header_actions %}{% endblock %}
+      </div>
+    </header>
+
+    <!-- Flash Messages -->
+    <div class="flash-container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="flash {{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+    </div>
+
+    <main class="page-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

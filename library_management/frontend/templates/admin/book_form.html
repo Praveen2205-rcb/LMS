@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Book{% endblock %}
+{% block header_title %}{{ action }} Book{% endblock %}
+{% block header_sub %}{% if book %}Editing: {{ book.title }}{% else %}Add a new book to inventory{% endif %}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:860px">
+  <div class="card-header">
+    <span class="card-title">📖 Book Details</span>
+    <a href="{{ url_for('admin.books') }}" class="btn btn-secondary btn-sm">← Back</a>
+  </div>
+  <div class="card-body">
+    <form method="POST">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Book Title *</label>
+          <input type="text" name="title" value="{{ book.title if book else '' }}" required placeholder="e.g. The Great Gatsby"/>
+        </div>
+        <div class="form-group">
+          <label>Author *</label>
+          <input type="text" name="author" value="{{ book.author if book else '' }}" required placeholder="Author name"/>
+        </div>
+        <div class="form-group">
+          <label>ISBN</label>
+          <input type="text" name="isbn" value="{{ book.isbn if book else '' }}" placeholder="978-3-16-148410-0"/>
+        </div>
+        <div class="form-group">
+          <label>Publisher</label>
+          <input type="text" name="publisher" value="{{ book.publisher if book else '' }}" placeholder="Publisher name"/>
+        </div>
+        <div class="form-group">
+          <label>Year Published</label>
+          <input type="number" name="year_published" value="{{ book.year_published if book else '' }}" placeholder="2024" min="1800" max="2099"/>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select name="category_id">
+            <option value="">Select category</option>
+            {% for c in categories %}
+            <option value="{{ c.id }}" {% if book and book.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Total Copies</label>
+          <input type="number" name="total_copies" value="{{ book.total_copies if book else 1 }}" min="1" max="1000"/>
+        </div>
+        <div class="form-group">
+          <label>Shelf Location</label>
+          <input type="text" name="location" value="{{ book.location if book else '' }}" placeholder="e.g. A-12, Row 3"/>
+        </div>
+        <div class="form-group full">
+          <label>Description</label>
+          <textarea name="description" placeholder="Brief description of the book…">{{ book.description if book else '' }}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button type="submit" class="btn btn-primary">{{ '💾 Update Book' if book else '➕ Add Book' }}</button>
+        <a href="{{ url_for('admin.books') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

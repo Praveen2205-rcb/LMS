@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — LibraryOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  <style>
+    .pulse-dot { width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:blink 1.5s infinite; }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.3} }
+    .cred-pill { display:flex;align-items:center;gap:8px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;font-size:0.78rem;color:var(--text-secondary);margin-bottom:6px; }
+    .cred-pill code { font-family:'DM Mono',monospace;background:var(--bg-card);padding:1px 6px;border-radius:4px;color:var(--accent); }
+    .login-box { animation:fadeUp 0.5s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+  </style>
+</head>
+<body>
+<div class="login-page">
+  <div class="login-bg-grid"></div>
+  <div class="login-bg-glow"></div>
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="icon">📚</div>
+      <div><h1>LibraryOS</h1><p>Library Management System</p></div>
+    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash {{ cat }}" style="margin-bottom:16px">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+    <h2 class="login-title">Welcome back</h2>
+    <p class="login-subtitle">Sign in to your account to continue</p>
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <div class="login-form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username" required autocomplete="username" style="margin-top:6px"/>
+      </div>
+      <div class="login-form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password" style="margin-top:6px"/>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;margin-top:8px;font-size:0.95rem">
+        Sign In →
+      </button>
+    </form>
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
+      <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+        <span class="pulse-dot"></span> Demo Credentials
+      </div>
+      <div class="cred-pill"><span style="color:var(--accent)">Admin</span><span>user: <code>admin</code></span><span>pass: <code>admin123</code></span></div>
+      <div class="cred-pill"><span style="color:var(--teal)">Librarian</span><span>user: <code>librarian</code></span><span>pass: <code>lib123</code></span></div>
+    </div>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('.flash').forEach(el => {
+    el.style.cursor='pointer';
+    el.addEventListener('click',()=>el.remove());
+    setTimeout(()=>{ if(el.parentNode) el.remove(); },4000);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Member Detail{% endblock %}
+{% block header_title %}Member Profile{% endblock %}
+{% block header_sub %}Detailed member information and history{% endblock %}
+{% block content %}
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">👤 Member Info</span>
+      <a href="{{ url_for("librarian.members") }}" class="btn btn-secondary btn-sm">← Back</a>
+    </div>
+    <div class="card-body">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+        <div style="width:56px;height:56px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:var(--bg-primary);flex-shrink:0">
+          {{ member.full_name[0]|upper }}
+        </div>
+        <div>
+          <div style="font-size:1.1rem;font-weight:600;color:var(--text-primary)">{{ member.full_name }}</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px">{{ member.email or "No email" }}</div>
+          <div style="margin-top:6px">
+            <span class="badge badge-blue font-mono">{{ member.member_id }}</span>
+            {% if member.is_active %}<span class="badge badge-green" style="margin-left:6px">Active</span>
+            {% else %}<span class="badge badge-rose" style="margin-left:6px">Inactive</span>{% endif %}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        {% if member.phone %}
+        <div style="display:flex;gap:10px">
+          <span style="width:100px;font-size:0.78rem;color:var(--text-muted);flex-shrink:0">Phone</span>
+          <span style="font-size:0.85rem">{{ member.phone }}</span>
+        </div>
+        {% endif %}
+        {% if member.address %}
+        <div style="display:flex;gap:10px">
+          <span style="width:100px;font-size:0.78rem;color:var(--text-muted);flex-shrink:0">Address</span>
+          <span style="font-size:0.85rem">{{ member.address }}</span>
+        </div>
+        {% endif %}
+        <div style="display:flex;gap:10px">
+          <span style="width:100px;font-size:0.78rem;color:var(--text-muted);flex-shrink:0">Member Since</span>
+          <span style="font-size:0.85rem">{{ member.created_at[:10] if member.created_at else "—" }}</span>
+        </div>
+        <div style="display:flex;gap:10px">
+          <span style="width:100px;font-size:0.78rem;color:var(--text-muted);flex-shrink:0">Role</span>
+          <span class="badge badge-amber">{{ member.role|title }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">📋 Borrow Summary</span></div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div style="background:var(--bg-secondary);padding:14px;border-radius:var(--radius-sm);text-align:center">
+          <div style="font-size:1.6rem;font-weight:600;color:var(--blue)">{{ transactions|length }}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">Total Borrows</div>
+        </div>
+        <div style="background:var(--bg-secondary);padding:14px;border-radius:var(--radius-sm);text-align:center">
+          <div style="font-size:1.6rem;font-weight:600;color:var(--amber)">{{ transactions|selectattr("status","in",["issued","overdue"])|list|length }}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">Currently Borrowed</div>
+        </div>
+        <div style="background:var(--bg-secondary);padding:14px;border-radius:var(--radius-sm);text-align:center">
+          <div style="font-size:1.6rem;font-weight:600;color:var(--rose)">{{ transactions|selectattr("status","equalto","overdue")|list|length }}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">Overdue</div>
+        </div>
+        <div style="background:var(--bg-secondary);padding:14px;border-radius:var(--radius-sm);text-align:center">
+          {% set total_fine = transactions|sum(attribute="fine_amount") %}
+          <div style="font-size:1.6rem;font-weight:600;color:var(--accent)">₹{{ "%.0f"|format(total_fine) }}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">Total Fines</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if transactions %}
+<div class="card" style="margin-top:20px">
+  <div class="card-header">
+    <span class="card-title">📚 Transaction History</span>
+    <span class="badge badge-amber">{{ transactions|length }}</span>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>#</th><th>Book</th><th>Issue Date</th><th>Due Date</th><th>Return Date</th><th>Fine</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for t in transactions %}
+        <tr>
+          <td class="font-mono text-sm text-muted">{{ t.id }}</td>
+          <td><strong>{{ t.book_title }}</strong></td>
+          <td class="text-sm">{{ t.issue_date }}</td>
+          <td class="text-sm {% if t.status=="overdue" %}text-rose{% endif %}">{{ t.due_date }}</td>
+          <td class="text-sm">{{ t.return_date or "—" }}</td>
+          <td>
+            {% if t.fine_amount and t.fine_amount > 0 %}
+            <span class="badge {% if t.fine_paid %}badge-green{% else %}badge-rose{% endif %}">₹{{ "%.2f"|format(t.fine_amount) }}</span>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+          <td>
+            {% if t.status=="issued" %}<span class="badge badge-amber">Issued</span>
+            {% elif t.status=="returned" %}<span class="badge badge-green">Returned</span>
+            {% elif t.status=="overdue" %}<span class="badge badge-rose">Overdue</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

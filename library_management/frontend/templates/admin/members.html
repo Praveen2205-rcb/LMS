@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Members{% endblock %}
+{% block header_title %}Member Management{% endblock %}
+{% block header_sub %}Manage registered library members{% endblock %}
+{% block header_actions %}
+  <a href="{{ url_for('admin.add_member_view') }}" class="btn btn-primary btn-sm">➕ Add Member</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <form method="GET" class="search-bar" style="flex:1">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" name="search" value="{{ search }}" placeholder="Search by name, email, member ID…" class="live-search"/>
+      </div>
+      <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+    </form>
+    <span class="badge badge-teal">{{ members|length }} members</span>
+  </div>
+  <div class="table-wrapper">
+    {% if members %}
+    <table>
+      <thead>
+        <tr><th>Member ID</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Active Borrows</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for m in members %}
+        <tr>
+          <td><span class="badge badge-blue font-mono">{{ m.member_id }}</span></td>
+          <td><strong>{{ m.full_name }}</strong></td>
+          <td class="text-sm">{{ m.email or "—" }}</td>
+          <td class="text-sm">{{ m.phone or "—" }}</td>
+          <td>
+            {% if m.active_borrows > 0 %}
+              <span class="badge badge-amber">{{ m.active_borrows }} book{{ 's' if m.active_borrows != 1 }}</span>
+            {% else %}
+              <span class="text-muted text-sm">None</span>
+            {% endif %}
+          </td>
+          <td>{% if m.is_active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-rose">Inactive</span>{% endif %}</td>
+          <td class="text-sm text-muted">{{ m.created_at[:10] if m.created_at else "—" }}</td>
+          <td>
+            <a href="{{ url_for('admin.edit_member_view', user_id=m.id) }}" class="btn btn-secondary btn-sm">✏ Edit</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">👥</div>
+      <p>No members found{% if search %} for "{{ search }}"{% endif %}</p>
+      <a href="{{ url_for('admin.add_member_view') }}" class="btn btn-primary" style="margin-top:12px">Register Member</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

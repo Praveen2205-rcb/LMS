@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}My Books{% endblock %}
+{% block header_title %}My Books{% endblock %}
+{% block header_sub %}Complete borrowing history{% endblock %}
+{% block content %}
+
+{% set active = transactions|selectattr("status","in",["issued","overdue"])|list %}
+{% set returned = transactions|selectattr("status","equalto","returned")|list %}
+{% set total_fine = transactions|sum(attribute="fine_amount") %}
+
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+  <div class="stat-card blue"><div class="stat-icon">📚</div><div class="stat-value">{{ active|length }}</div><div class="stat-label">Currently Borrowed</div></div>
+  <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-value">{{ returned|length }}</div><div class="stat-label">Returned</div></div>
+  <div class="stat-card rose"><div class="stat-icon">⚠</div><div class="stat-value">{{ transactions|selectattr("status","equalto","overdue")|list|length }}</div><div class="stat-label">Overdue</div></div>
+  <div class="stat-card amber"><div class="stat-icon">₹</div><div class="stat-value" style="font-size:1.3rem">₹{{ "%.0f"|format(total_fine) }}</div><div class="stat-label">Total Fines</div></div>
+</div>
+
+{% if active %}
+<div class="card" style="margin-bottom:20px">
+  <div class="card-header">
+    <span class="card-title">📖 Currently Borrowed</span>
+    <span class="badge badge-amber">{{ active|length }} active</span>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Book Title</th><th>Author</th><th>Issued On</th><th>Due Date</th><th>Status</th><th>Fine</th></tr>
+      </thead>
+      <tbody>
+        {% for t in active %}
+        <tr>
+          <td class="font-mono text-muted text-sm">{{ t.id }}</td>
+          <td><strong>{{ t.book_title }}</strong></td>
+          <td class="text-sm text-muted">{{ t.book_author }}</td>
+          <td class="text-sm">{{ t.issue_date }}</td>
+          <td class="text-sm {% if t.status == "overdue" %}text-rose{% endif %}">
+            {{ t.due_date }}
+            {% if t.status == "overdue" %}
+            <br><span style="font-size:0.68rem;color:var(--rose);font-weight:600">OVERDUE</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if t.status == "overdue" %}<span class="badge badge-rose">⚠ Overdue</span>
+            {% else %}<span class="badge badge-amber">Issued</span>{% endif %}
+          </td>
+          <td>
+            {% if t.fine_amount and t.fine_amount > 0 %}
+            <span class="badge badge-rose">₹{{ "%.2f"|format(t.fine_amount) }}</span>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if returned %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">🕒 Return History</span>
+    <span class="badge badge-green">{{ returned|length }} returned</span>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Book Title</th><th>Author</th><th>Issued</th><th>Returned</th><th>Fine</th><th>Fine Status</th></tr>
+      </thead>
+      <tbody>
+        {% for t in returned %}
+        <tr>
+          <td class="font-mono text-muted text-sm">{{ t.id }}</td>
+          <td><strong>{{ t.book_title }}</strong></td>
+          <td class="text-sm text-muted">{{ t.book_author }}</td>
+          <td class="text-sm">{{ t.issue_date }}</td>
+          <td class="text-sm">{{ t.return_date or "—" }}</td>
+          <td>
+            {% if t.fine_amount and t.fine_amount > 0 %}
+            <span style="color:var(--rose);font-size:0.85rem">₹{{ "%.2f"|format(t.fine_amount) }}</span>
+            {% else %}<span class="badge badge-green">No fine</span>{% endif %}
+          </td>
+          <td>
+            {% if t.fine_amount and t.fine_amount > 0 %}
+              {% if t.fine_paid %}<span class="badge badge-green">✓ Paid</span>
+              {% else %}<span class="badge badge-rose">Pending</span>{% endif %}
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if not transactions %}
+<div class="empty-state" style="padding:80px 20px">
+  <div class="empty-icon">📚</div>
+  <p style="font-size:0.95rem;margin-bottom:8px">No borrowing history yet</p>
+  <a href="{{ url_for("member.search") }}" class="btn btn-primary" style="margin-top:12px">Browse Books</a>
+</div>
+{% endif %}
+{% endblock %}

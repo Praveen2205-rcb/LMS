@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Return Book{% endblock %}
+{% block header_title %}Return Book{% endblock %}
+{% block header_sub %}Process book returns and calculate fines{% endblock %}
+{% block content %}
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">↩ Process Return</span>
+      <span class="badge badge-amber">{{ transactions|length }} active</span>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Select Transaction *</label>
+          <select name="transaction_id" required style="margin-top:6px">
+            <option value="">— Select issued book —</option>
+            {% for t in transactions %}
+            <option value="{{ t.id }}" style="{% if t.status == 'overdue' %}color:#f43f5e{% endif %}">
+              #{{ t.id }} — {{ t.book_title }} → {{ t.member_name }}
+              (due: {{ t.due_date }}){% if t.status == 'overdue' %} ⚠ OVERDUE{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="padding:12px;background:var(--rose-dim);border-radius:var(--radius-sm);margin-bottom:16px;font-size:0.82rem;color:var(--rose)">
+          ⚠ Fine: ₹2.00 per day overdue. Calculated automatically on return.
+        </div>
+        <button type="submit" class="btn btn-teal" style="width:100%;justify-content:center;padding:12px">
+          ↩ Process Return
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">📋 Active Issues</span></div>
+    <div style="overflow-x:auto;max-height:420px">
+      {% if transactions %}
+      <table>
+        <thead><tr><th>#</th><th>Book</th><th>Member</th><th>Due</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for t in transactions %}
+          <tr>
+            <td class="font-mono text-sm text-muted">{{ t.id }}</td>
+            <td><strong class="truncate" style="max-width:130px;display:block">{{ t.book_title }}</strong></td>
+            <td class="text-sm">{{ t.member_name }}</td>
+            <td class="text-sm {% if t.status == 'overdue' %}text-rose{% endif %}">{{ t.due_date }}</td>
+            <td>
+              {% if t.status == 'overdue' %}<span class="badge badge-rose">⚠ Overdue</span>
+              {% else %}<span class="badge badge-amber">Issued</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state"><div class="empty-icon">✅</div><p>No active issues</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

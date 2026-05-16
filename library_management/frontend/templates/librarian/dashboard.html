@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Librarian Dashboard{% endblock %}
+{% block header_title %}Librarian Dashboard{% endblock %}
+{% block header_sub %}Manage daily book operations{% endblock %}
+{% block content %}
+<div data-live-stats="1">
+<div class="stats-grid">
+  <div class="stat-card amber">
+    <div class="stat-icon">📚</div>
+    <div class="stat-value" id="stat-total-books">{{ stats.total_books }}</div>
+    <div class="stat-label">Total Books</div>
+  </div>
+  <div class="stat-card blue">
+    <div class="stat-icon">↔</div>
+    <div class="stat-value" id="stat-active-issues">{{ stats.active_issues }}</div>
+    <div class="stat-label">Active Issues</div>
+  </div>
+  <div class="stat-card rose">
+    <div class="stat-icon">⚠</div>
+    <div class="stat-value" id="stat-overdue">{{ stats.overdue_count }}</div>
+    <div class="stat-label">Overdue</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-icon">📤</div>
+    <div class="stat-value" id="stat-today-issues">{{ stats.today_issues }}</div>
+    <div class="stat-label">Issued Today</div>
+  </div>
+  <div class="stat-card teal">
+    <div class="stat-icon">📥</div>
+    <div class="stat-value" id="stat-today-returns">{{ stats.today_returns }}</div>
+    <div class="stat-label">Returned Today</div>
+  </div>
+  <div class="stat-card purple">
+    <div class="stat-icon">₹</div>
+    <div class="stat-value" id="stat-fines" style="font-size:1.3rem">₹{{ "%.0f"|format(stats.total_fines) }}</div>
+    <div class="stat-label">Pending Fines</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">⚡ Quick Actions</span>
+    </div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+      <a href="{{ url_for('librarian.issue') }}" class="btn btn-primary" style="justify-content:center;padding:14px">
+        ➕ Issue a Book
+      </a>
+      <a href="{{ url_for('librarian.return_book_view') }}" class="btn btn-teal" style="justify-content:center;padding:14px">
+        ↩ Return a Book
+      </a>
+      <a href="{{ url_for('librarian.members') }}" class="btn btn-secondary" style="justify-content:center;padding:14px">
+        👥 View Members
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📋 Recent Transactions</span>
+      <span class="badge badge-amber">Latest 10</span>
+    </div>
+    <div style="overflow-x:auto">
+      {% if recent_txns %}
+      <table>
+        <thead><tr><th>Book</th><th>Member</th><th>Status</th><th>Due</th></tr></thead>
+        <tbody>
+          {% for t in recent_txns %}
+          <tr>
+            <td><strong class="truncate" style="max-width:140px;display:block">{{ t.book_title }}</strong></td>
+            <td class="text-sm">{{ t.member_name }}</td>
+            <td>
+              {% if t.status == 'issued' %}<span class="badge badge-amber">Issued</span>
+              {% elif t.status == 'returned' %}<span class="badge badge-green">Returned</span>
+              {% elif t.status == 'overdue' %}<span class="badge badge-rose">Overdue</span>
+              {% endif %}
+            </td>
+            <td class="text-sm {% if t.status == 'overdue' %}text-rose{% endif %}">{{ t.due_date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state"><p>No transactions yet</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}
